@@ -59,19 +59,12 @@ st.title("Movie Recommendation System")
 # Movie Selection
 movie_titles = dict(zip(movies['movieId'], movies['title']))
 movie_options = list(movie_titles.values())
-
-# Add placeholder text for the selectbox
-selected_movie_title = st.selectbox("Select a movie:", options=movie_options, index=0)
+selected_movie_title = st.selectbox("Select a movie:", movie_options)
 
 if selected_movie_title:
     selected_movie_id = movies[movies['title'] == selected_movie_title]['movieId'].values[0]
     st.write(f"You selected: {selected_movie_title}")
     similar_movie_ids = find_similar_movies(X, selected_movie_id, k=10)
-    if similar_movie_ids:
-        st.write("You might also like:")
-        for movie_id in similar_movie_ids:
-            st.write(movie_titles.get(movie_id, "Movie not found"))
-    else:
-        st.write("No similar movies found.")
-else:
-    st.write("Please select a movie to see recommendations.")
+    st.write("You might also like:")
+    for movie_id in similar_movie_ids:
+        st.write(movie_titles.get(movie_id, "Movie not found"))
