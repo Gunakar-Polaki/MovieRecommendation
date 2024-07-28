@@ -56,17 +56,24 @@ def find_similar_movies(_X, movie_id, k, metric='cosine', show_distance=False):
 # Streamlit App
 st.title("Movie Recommendation System")
 
-# Year and Rating Input
-year_input = st.number_input("Enter the year:", min_value=1900, max_value=2100, value=2000, step=1)
-min_rating = st.slider("Minimum average rating:", min_value=1, max_value=5, value=3, step=1)
+# Ask if user wants to apply filters
+apply_filters = st.checkbox("Apply filters for year and rating")
 
-# Filter movies based on the year and minimum rating
-filtered_movies = movies[movies['title'].str.contains(str(year_input), case=False, na=False)]
-movie_titles = dict(zip(filtered_movies['movieId'], filtered_movies['title']))
+if apply_filters:
+    year_input = st.number_input("Enter the year:", min_value=1900, max_value=2100, value=2000, step=1)
+    min_rating = st.slider("Minimum average rating:", min_value=1, max_value=5, value=3, step=1)
+
+    # Filter movies based on the year and minimum rating
+    filtered_movies = movies[movies['title'].str.contains(str(year_input), case=False, na=False)]
+    movie_titles = dict(zip(filtered_movies['movieId'], filtered_movies['title']))
+else:
+    # Show all movies if no filters are applied
+    movie_titles = dict(zip(movies['movieId'], movies['title']))
+
 movie_options = list(movie_titles.values())
 
 if not movie_options:
-    st.write("No movies found for the selected year.")
+    st.write("No movies found.")
 else:
     selected_movie_title = st.selectbox("Select a movie:", options=movie_options)
 
@@ -74,10 +81,19 @@ else:
         selected_movie_id = movies[movies['title'] == selected_movie_title]['movieId'].values[0]
         st.write(f"You selected: {selected_movie_title}")
 
-        # Filter ratings based on the selected movie and minimum rating
-        relevant_ratings = ratings[(ratings['movieId'] == selected_movie_id) & (ratings['rating'] >= min_rating)]
-        if relevant_ratings.empty:
-            st.write("No ratings found for the selected movie with the specified rating.")
+        if apply_filters:
+            # Filter ratings based on the selected movie and minimum rating
+            relevant_ratings = ratings[(ratings['movieId'] == selected_movie_id) & (ratings['rating'] >= min_rating)]
+            if relevant_ratings.empty:
+                st.write("No ratings found for the selected movie with the specified rating.")
+            else:
+                similar_movie_ids = find_similar_movies(X, selected_movie_id, k=10)
+                if similar_movie_ids:
+                    st.write("You might also like:")
+                    for movie_id in similar_movie_ids:
+                        st.write(movie_titles.get(movie_id, "Movie not found"))
+                else:
+                    st.write("No similar movies found.")
         else:
             similar_movie_ids = find_similar_movies(X, selected_movie_id, k=10)
             if similar_movie_ids:
