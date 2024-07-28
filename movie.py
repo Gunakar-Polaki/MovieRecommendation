@@ -65,6 +65,14 @@ if apply_filters:
 
     # Filter movies based on the year and minimum rating
     filtered_movies = movies[movies['title'].str.contains(str(year_input), case=False, na=False)]
+    if not filtered_movies.empty:
+        filtered_movie_ids = filtered_movies['movieId'].unique()
+        filtered_ratings = ratings[ratings['movieId'].isin(filtered_movie_ids) & (ratings['rating'] >= min_rating)]
+        filtered_movie_ids = filtered_ratings['movieId'].unique()
+        filtered_movies = filtered_movies[filtered_movies['movieId'].isin(filtered_movie_ids)]
+    else:
+        filtered_movies = pd.DataFrame(columns=['movieId', 'title'])  # Empty DataFrame if no movies match
+
     movie_titles = dict(zip(filtered_movies['movieId'], filtered_movies['title']))
 else:
     # Show all movies if no filters are applied
@@ -88,6 +96,8 @@ else:
                 st.write("No ratings found for the selected movie with the specified rating.")
             else:
                 similar_movie_ids = find_similar_movies(X, selected_movie_id, k=10)
+                similar_movie_ids = [movie_id for movie_id in similar_movie_ids if movie_id in movie_titles]
+
                 if similar_movie_ids:
                     st.write("You might also like:")
                     for movie_id in similar_movie_ids:
@@ -96,6 +106,8 @@ else:
                     st.write("No similar movies found.")
         else:
             similar_movie_ids = find_similar_movies(X, selected_movie_id, k=10)
+            similar_movie_ids = [movie_id for movie_id in similar_movie_ids if movie_id in movie_titles]
+
             if similar_movie_ids:
                 st.write("You might also like:")
                 for movie_id in similar_movie_ids:
