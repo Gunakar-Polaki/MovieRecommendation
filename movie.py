@@ -56,15 +56,34 @@ def find_similar_movies(_X, movie_id, k, metric='cosine', show_distance=False):
 # Streamlit App
 st.title("Movie Recommendation System")
 
-# Movie Selection
-movie_titles = dict(zip(movies['movieId'], movies['title']))
+# User Input for Year and Rating
+year_input = st.number_input("Enter the year:", min_value=1900, max_value=2100, value=2000)
+min_rating = st.slider("Select minimum average rating:", min_value=0.0, max_value=10.0, value=0.0, step=0.1)
+
+# Filter movies by year and rating
+filtered_movies = movies[movies['title'].str.contains(str(year_input), case=False, na=False)]
+
+# Display movie options
+movie_titles = dict(zip(filtered_movies['movieId'], filtered_movies['title']))
 movie_options = list(movie_titles.values())
-selected_movie_title = st.selectbox("Select a movie:", movie_options)
+selected_movie_title = st.selectbox("Select a movie:", options=movie_options, index=0, format_func=lambda x: x if x else "Select a movie")
 
 if selected_movie_title:
     selected_movie_id = movies[movies['title'] == selected_movie_title]['movieId'].values[0]
     st.write(f"You selected: {selected_movie_title}")
+    
+    # Filter ratings based on minimum rating
+    filtered_ratings = ratings[ratings['rating'] >= min_rating]
+    
+    # Recreate matrix with filtered ratings
+    X, user_mapper, movie_mapper, user_inv_mapper, movie_inv_mapper = create_matrix(filtered_ratings)
+    
     similar_movie_ids = find_similar_movies(X, selected_movie_id, k=10)
-    st.write("You might also like:")
-    for movie_id in similar_movie_ids:
-        st.write(movie_titles.get(movie_id, "Movie not found"))
+    if similar_movie_ids:
+        st.write("You might also like:")
+        for movie_id in similar_movie_ids:
+            st.write(movie_titles.get(movie_id, "Movie not found"))
+    else:
+        st.write("No similar movies found.")
+else:
+    st.write("Please select a movie to see recommendations.")
