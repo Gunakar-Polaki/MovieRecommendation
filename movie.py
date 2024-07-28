@@ -59,7 +59,7 @@ st.title("Movie Recommendation System")
 # Movie Selection
 movie_titles = dict(zip(movies['movieId'], movies['title']))
 movie_options = list(movie_titles.values())
-selected_movie_title = st.selectbox("Select a movie:", movie_options)
+selected_movie_title = st.selectbox("Select a movie:", movie_options, index=None)
 
 if selected_movie_title:
     selected_movie_id = movies[movies['title'] == selected_movie_title]['movieId'].values[0]
