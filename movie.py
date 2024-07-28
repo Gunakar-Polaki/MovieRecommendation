@@ -61,7 +61,7 @@ movie_titles = dict(zip(movies['movieId'], movies['title']))
 movie_options = list(movie_titles.values())
 
 # Add placeholder text for the selectbox
-selected_movie_title = st.selectbox("Select a movie:", options=movie_options, index=None, format_func=lambda x: x if x else "Select a movie")
+selected_movie_title = st.selectbox("Select a movie:", options=movie_options, index=0)
 
 if selected_movie_title:
     selected_movie_id = movies[movies['title'] == selected_movie_title]['movieId'].values[0]
